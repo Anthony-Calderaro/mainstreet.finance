@@ -14,8 +14,8 @@ To increase the transparency and availability of freely available, public financ
 
 # Infrastructure:
 
-Each Stock is a document in Lambda with meta data and historical data (Massive dataset)
-Each stock's meta data is then piped into a relational table for each PTC (~4k) Run this on Supabase?
+Each Stock is a document in Lambda with all historical data (Massive dataset) and EDGAR reference numbers, cik numbers
+Each stock's data is then summarized and piped into a relational table for each PTC (~4k) Run this on Supabase?
 
 # Sitemap
 
@@ -26,6 +26,9 @@ Each stock's meta data is then piped into a relational table for each PTC (~4k) 
 <!-- # Roadmap
 free Brokerage
 educational tool (stock simulation)
+Educational resources: Financial Accounting like stripe docs
+The real costs: Risk, Fees, Inflation, Principle, Opportunity
+
 Bonds
 Forex
 -->
@@ -36,3 +39,24 @@ Forex
 3. To actively pursue our charitable cause, we will make intentional decisions which make it difficult for people who wish to use our tools for speculation or frequent trading -- which we define as buying and selling a security within a time frame such that they must pay ordinary rather than capital gains tax. This means we will not have live charts, quotes, or real-time data other than what is made at the moment a request is made.
 4. Evangelize and teach financial education. As the single most important factor in any learning endeavor is attention, we are therefore mission-bound to be anti-sponsorship, anti-advertisement, and anti-promotional. We do not collect user data, we do not sell query data, we do not provide advertising or business oppoprtunities for sponsorship.
 5. How we make money: We provide hosted solutions of all our open source tools, which can be accessed at a free tier and a premium tier. As our code is open source, we allow users to configure their own setups -->
+
+## scraping.js (1010 Bot)
+
+1010 is our bot which retrieves, scrubs, and processes new 10-Q and 10-Q filings as they are released. This process involves:
+
+1. Pulling the latest data from the SEC's EDGAR filings
+2. Scrubbing the data and formatting it for upload
+3. Pushing the data to our various databases
+4. Uploading the raw data for users to [export]()
+
+# Software Packages
+
+1. Puppeteer for searching EDGAR and pull the data
+2. Python in [Jupytr Notebooks]() for data science and API communication
+
+The puppeteer logic is held in `scraping.js` and is currently run manually as data is updated on the SEC's webpage
+
+# Todo:
+
+1. Automatically determine when new data is available from EDGAR
+2. Automatically run scraping.js in response to data updates
