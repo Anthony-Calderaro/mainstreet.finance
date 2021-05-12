@@ -1,9 +1,9 @@
-# import pandas as pd
-# import json
-# import boto3
+import pandas as pd
+import json
+import boto3
 
 # Create a Data Frame 
-dataframe = pd.read_csv("./14k.csv", sep='\t')
+dataframe = pd.read_csv("./1k.csv", sep='\t')
 
 # Remove unnecessary columns (for details on what each column means: https://www.sec.gov/files/aqfs.pdf)
 necessary_columns = ['edgar_accession_number', 'account_name', 'date', 'value']
@@ -201,3 +201,16 @@ PostgreSQL | 'securities' | each row is precalculated financial ratios for each 
 '''
 
 
+
+'''
+
+security
+  -> financial_data
+    -> years
+      -> financial_ratios (calc'd later)
+      -> financial_accounts
+        -> value / financial statement
+
+get me the working capital ratio for appl in 2012
+appl.financial_data.2012.financial_accounts
+'''
