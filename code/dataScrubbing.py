@@ -1,9 +1,11 @@
 import pandas as pd
-import json
+import math
 import boto3
-
+from datetime import datetime
+startTime = datetime.now()
 # Create a Data Frame 
-dataframe = pd.read_csv("./1k.csv", sep='\t')
+# dataframe = pd.read_csv("./1k.csv", sep='\t')
+dataframe = pd.read_csv("./full_num.txt", sep='\t')
 
 # Remove unnecessary columns (for details on what each column means: https://www.sec.gov/files/aqfs.pdf)
 necessary_columns = ['edgar_accession_number', 'account_name', 'date', 'value']
@@ -15,7 +17,8 @@ for column in unnecessary_columns:
 # Rename columns for clarity
 dataframe.columns = necessary_columns
 
-print(dataframe.shape)
+# print(dataframe.shape)
+
 dictionary_of_securities_and_accounts = {}
 # list_of_financial_accounts = dataframe[0:50].values
 list_of_financial_accounts = dataframe.values
@@ -42,84 +45,55 @@ documents = []
 for security in dictionary_of_securities_and_accounts.items():
   # print('security: ', security)
   new_doc = {}
-  new_doc['id'] = security[0]
+  new_doc['edgar_accession_number'] = security[0]
+  new_doc['stock_symbol'] = 'COF'
+  new_doc['former_symbols'] = []
   new_doc['financial_data'] = {}
+
   for account in security[1]:
     # print('acc: ', account)
-    account_date = account['date']
-    account_name = account['account_name']
-    value = account['value']
+    account_date = str(account['date'])
+    account_name = str(account['account_name'])
+    value = str(account['value'])
+    
+    # if (type(account['value']) == float or type(account['value']) == int):
+    #   value = float(account['value'])
+    # else:
+    #   print(type(value)) 
+    # if type(account['value']) != int:
+    #   print(account['value']) 
+    # value = int(account['value']) if account['value'] else 0
     if account_date in new_doc['financial_data']:
       if account_name in new_doc['financial_data'][account_date]:
-        print('duplicate account in the same year?: ')
+        # Todo: question for SEC. Should there be duplicates?
+        # print("new_doc['financial_data'] ", new_doc['financial_data'])
+        # print('duplicate account in the same year?: ', account)
+        dupe = account_name + 'dupe'
+        new_doc['financial_data'][account_date][dupe] = []
+        new_doc['financial_data'][account_date][dupe].append(value)
       else:
-        new_doc['financial_data']['account_date'][account_name] = value
+        new_doc['financial_data'][account_date][account_name] = value
     else:
       new_doc['financial_data'][account_date] = { account_name: value }
   documents.append(new_doc)
-print(documents[0])
-  
-'''
-Create list of new items which need to be searched, push into a queue and run the lambdas to scrape and update the dynamo table
-For now, print to a .txt file
-accession_number_dataframe = dataframe.copy(deep = True)[['edgar_accession_number']]
-accession_numbers_dictionary = {}
-for value_list in accession_number_dataframe.values.tolist():
-  accession_numbers_dictionary[value_list[0]] = ''
-jsonString = json.dumps(accession_numbers_dictionary)
-jsonFile = open("data.json", "w")
-jsonFile.write(jsonString)
-jsonFile.close()
-'''
-# For Each, create an item and put in table
-# for security in list_of_securities:
-  # print(security.keys())
-  # new_item = {
-  #   'edgar_accession_number': 2,
-  #   'financial_data': [
-  #     {
-  #       'year': 1,
-  #       'account1': 10,
-  #       'account2': 20
-  #     },
-  #     {
-  #       'year': 2,
-  #       'account1': 10,
-  #       'account2': 20
-  #     }
-  #   ],
-  #   'symbol': '1',
-  #   'common_name': 'Capital One Financial',
-  #   'legal_name': 'Capital One Financial, Inc.',
-  #   'former_symbols': [],
-  # }
-# Pull in the existing accession #s from our dynamodb
+
+formatting_data = datetime.now() - startTime
+print('formatting data: ', formatting_data)
+
 dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('securities')
+
+for d in documents[0:500]:
+  # print(d)
+  # print()
+  # Update a Company Document in the DynamoDB Table you created.
+  table.put_item(Item=d)
+
+dynamo_time = datetime.now() - formatting_data
+print('dynamo: ', dynamo_time)
 
 
-# Update a Company Document in the DynamoDB Table you created.
-# table = dynamodb.Table('securities')
-# table.put_item(
-#   Item={
-#     'edgar_accession_number': 2,
-#     'financial_data': [
-#       {
-#         'year': 1,
-#         'account1': 10,
-#         'account2': 20
-#       },
-#       {
-#         'year': 2,
-#         'account1': 10,
-#         'account2': 20
-#       }
-#     ],
-#     'symbol': '1',
-#     'common_name': 'Capital One Financial',
-#     'legal_name': 'Capital One Financial, Inc.',
-#     'former_symbols': [],
-#   }
-# )
+
 # Create the DynamoDB table. Todo: This should be put into a config/setup directory
 # dynamodb.create_table(
 #   TableName='securities',
@@ -176,32 +150,6 @@ Each security will have at least the following:
 
 
 Situation: I have new data to update
-new_date_list = [
-  {
-    accession_number: number,
-    new_data: {
-      date: ddate,
-      acc1: value,
-      acc2:value
-    }
-  },
-  {
-    accession_number: number,
-    new_data: {
-      date: ddate,
-      acc1: value,
-      acc2:value
-    }
-  }
-]
-new_data_dictionary = {
-  accession_number: {
-    date: ddate,
-    account1: value,
-    account2: value
-  },
-  accession_number2: {}
-}
 2. Iterate over the .txt data and for each item, add the account data to the new_data_dictionary
 3. Once done, iterate over each item in the dictionary, find the document in dynamodb with a matching accession_number
 
