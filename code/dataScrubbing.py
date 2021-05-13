@@ -1,5 +1,5 @@
 import pandas as pd
-import math
+from time import sleep
 import boto3
 from datetime import datetime
 startTime = datetime.now()
@@ -55,14 +55,7 @@ for security in dictionary_of_securities_and_accounts.items():
     account_date = str(account['date'])
     account_name = str(account['account_name'])
     value = str(account['value'])
-    
-    # if (type(account['value']) == float or type(account['value']) == int):
-    #   value = float(account['value'])
-    # else:
-    #   print(type(value)) 
-    # if type(account['value']) != int:
-    #   print(account['value']) 
-    # value = int(account['value']) if account['value'] else 0
+
     if account_date in new_doc['financial_data']:
       if account_name in new_doc['financial_data'][account_date]:
         # Todo: question for SEC. Should there be duplicates?
@@ -82,13 +75,26 @@ print('formatting data: ', formatting_data)
 
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('securities')
-
-for d in documents[0:500]:
-  # print(d)
-  # print()
-  # Update a Company Document in the DynamoDB Table you created.
-  table.put_item(Item=d)
-
+# Update table to have 20 RW capoacity within 25 free tier
+# client = boto3.client('dynamodb')
+# client.update_table(
+#   TableName='securities',
+#   ProvisionedThroughput={
+#     'ReadCapacityUnits': 20,
+#     'WriteCapacityUnits': 20
+#   }
+# )
+print(len(documents))
+try:
+  num = 0
+  with table.batch_writer() as batch:
+    for item in documents[0:5000]:
+      sleep(.25)
+      print(num)
+      num += 1
+      batch.put_item(Item=item)
+except Exception as e:
+  print('error: ', e)
 dynamo_time = datetime.now() - formatting_data
 print('dynamo: ', dynamo_time)
 
