@@ -37,8 +37,28 @@ for account_details in list_of_financial_accounts:
   else:
     dictionary_of_securities_and_accounts[accession_number] = [new_item]
 
-print(dictionary_of_securities_and_accounts)
-
+# print(dictionary_of_securities_and_accounts)
+documents = []
+for security in dictionary_of_securities_and_accounts.items():
+  # print('security: ', security)
+  new_doc = {}
+  new_doc['id'] = security[0]
+  new_doc['financial_data'] = {}
+  for account in security[1]:
+    # print('acc: ', account)
+    account_date = account['date']
+    account_name = account['account_name']
+    value = account['value']
+    if account_date in new_doc['financial_data']:
+      if account_name in new_doc['financial_data'][account_date]:
+        print('duplicate account in the same year?: ')
+      else:
+        new_doc['financial_data']['account_date'][account_name] = value
+    else:
+      new_doc['financial_data'][account_date] = { account_name: value }
+  documents.append(new_doc)
+print(documents[0])
+  
 '''
 Create list of new items which need to be searched, push into a queue and run the lambdas to scrape and update the dynamo table
 For now, print to a .txt file
@@ -203,6 +223,16 @@ PostgreSQL | 'securities' | each row is precalculated financial ratios for each 
 
 
 '''
+
+{
+  id: 1234,
+  financial_data: {
+    2011: {
+      cash: 123,
+      liability: 123
+    }
+  }
+}
 
 security
   -> financial_data
