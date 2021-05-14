@@ -22,6 +22,7 @@ dataframe.columns = necessary_columns
 dictionary_of_securities_and_accounts = {}
 # list_of_financial_accounts = dataframe[0:50].values
 list_of_financial_accounts = dataframe.values
+print(len(dataframe)) # 3m line items.
 for account_details in list_of_financial_accounts:
   accession_number = account_details[0]
   account_name = account_details[1]
@@ -88,8 +89,8 @@ print(len(documents))
 try:
   num = 0
   with table.batch_writer() as batch:
-    for item in documents[0:5000]:
-      sleep(.25)
+    for item in documents:
+      sleep(1) # Todo: This is obviously, not cool.
       print(num)
       num += 1
       batch.put_item(Item=item)
