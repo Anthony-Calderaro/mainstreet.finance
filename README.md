@@ -56,6 +56,13 @@ Forex
 
 The puppeteer logic is held in `scraping.js` and is currently run manually as data is updated on the SEC's webpage
 
+# Pricing / API Tiers
+
+Public: Free Tier, no separate API Key required, generous rate limits
+Private: Personal Tier, separate aPI Key required, no $, good for students,
+Plus: API Key, more available/performant @ $25 per month (good for hobiest, early stage companies, researchers)
+Premium: Highly Available/Performant API Key @ $50 per month (enterprise, custom analytics, fund managers and analysts)
+
 # Todo:
 
 1. Automatically determine when new data is available from EDGAR
